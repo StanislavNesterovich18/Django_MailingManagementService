@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Детали рассылки #{{ mailing.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:mailing_list' %}">Рассылки</a>
+                    </li>
+                    <li class="breadcrumb-item active">Рассылка #{{ mailing.id }}</li>
+                </ol>
+            </nav>
+
+            <!-- Заголовок -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    Рассылка #{{ mailing.id }}
+                    {% if mailing.status == "NEW" %}
+                        <span class="badge bg-secondary ms-2">Создана</span>
+                    {% elif mailing.status == "LAU" %}
+                        <span class="badge bg-success ms-2">Запущена</span>
+                    {% else %}
+                        <span class="badge bg-primary ms-2">Завершена</span>
+                    {% endif %}
+                </h1>
+                <div>
+                    <a href="{% url 'mailing:update_mailing' mailing.pk %}" class="btn btn-warning">
+                        <i class="bi bi-pencil me-2"></i>Редактировать
+                    </a>
+                    <a href="{% url 'mailing:delete_mailing' mailing.pk %}" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Удалить
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Основная информация -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Информация о рассылке
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th style="width: 40%">ID рассылки:</th>
+                                    <td>#{{ mailing.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Статус:</th>
+                                    <td>
+                                        {% if mailing.status == "NEW" %}
+                                            <span class="badge bg-secondary">Создана</span>
+                                        {% elif mailing.status == "LAU" %}
+                                            <span class="badge bg-success">Запущена</span>
+                                        {% elif mailing.status == "COM" %}
+                                            <span class="badge bg-primary">Завершена</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Дата начала:</th>
+                                    <td>{{ mailing.start_time|date:"d.m.Y H:i:s" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Дата окончания:</th>
+                                    <td>{{ mailing.end_time|date:"d.m.Y H:i:s" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Владелец:</th>
+                                    <td>{{ mailing.owner.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Количество получателей:</th>
+                                    <td>
+                                        <i class="bi bi-people-fill me-1"></i>
+                                        {{ mailing.recipients.count }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Информация о сообщении -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-envelope me-2"></i>Информация о сообщении
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if mailing.message %}
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th style="width: 40%">Тема:</th>
+                                        <td>{{ mailing.message.subject|default:"Без темы" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Текст сообщения:</th>
+                                        <td>
+                                            <div class="border rounded p-3 bg-light">
+                                                {{ mailing.message.body|linebreaks|default:"Нет текста" }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            {% else %}
+                                <div class="alert alert-warning mb-0">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Сообщение не привязано к рассылке
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Список получателей -->
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-people me-2"></i>Список получателей
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Ф.И.О.</th>
+                                            <th>Дата добавления</th>
+                                            <th>Статус</th>
+                                            <th>Комментарий</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for recipient in mailing.recipients.all %}
+                                        <tr>
+                                            <td>
+                                                <i class="bi bi-envelope me-1"></i>
+                                                {{ recipient.email }}
+                                            </td>
+                                            <td>{{ recipient.full_username|default:"—" }}</td>
+                                            <td>{{ recipient.attempt_time|date:"d.m.Y H:i" }}</td>
+                                            <td>
+                                                {% if recipient.status %}
+                                                    <span class="badge bg-success">Доставлено</span>
+                                                    {% if recipient.server_response %}
+                                                        <i class="bi bi-info-circle ms-1" 
+                                                           title="{{ recipient.server_response }}"
+                                                           data-bs-toggle="tooltip"></i>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-danger">Не доставлено</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ recipient.comment|truncatechars:50|default:"—" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-5">
+                                                <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                                                <p class="text-muted mb-0">Нет получателей</p>
+                                                <button class="btn btn-sm btn-primary mt-3" 
+                                                        onclick="addRecipients()">
+                                                    <i class="bi bi-plus-circle me-1"></i>Добавить получателей
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Инициализация tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    function addRecipients() {
+        // Модальное окно для добавления получателей
+        alert('Функция добавления получателей будет реализована');
+    }
+</script>
+{% endblock %}

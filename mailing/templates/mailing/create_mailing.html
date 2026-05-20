@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Создание новой рассылки{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:mailing_list' %}">
+                            <i class="bi bi-envelope-paper me-1"></i>Рассылки
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Создание рассылки</li>
+                </ol>
+            </nav>
+
+            <!-- Заголовок -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i class="bi bi-plus-circle me-2 text-primary"></i>Создание новой рассылки
+                </h1>
+                <a href="{% url 'mailing:mailing_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Назад к списку
+                </a>
+            </div>
+
+            <!-- Форма создания -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="mailingForm" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Сообщение -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-envelope me-1"></i>Сообщение для рассылки
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="message" class="form-select" required>
+                                <option value="">Выберите сообщение</option>
+                                {% for message in messages %}
+                                <option value="{{ message.id }}" {% if form.message.value == message.id %}selected{% endif %}>
+                                    {{ message.subject_letter|truncatechars:50 }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Если сообщений нет, создайте их в разделе "Сообщения"
+                            </div>
+                            {% if form.message.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.message.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Статус -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-flag me-1"></i>Статус рассылки
+                            </label>
+                            <select name="status" class="form-select">
+                                <option value="LAU" {% if form.status.value == 'LAU' or not form.status.value %}selected{% endif %}>
+                                    Запущена (начнется сразу после создания)
+                                </option>
+                                <option value="NEW" {% if form.status.value == 'NEW' %}selected{% endif %}>
+                                    Создана (будет запущена позже)
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                Запущенная рассылка начнет отправляться немедленно
+                            </div>
+                        </div>
+
+                        <!-- Получатели -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-people me-1"></i>Получатели
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="border rounded p-3">
+                                <div class="mb-3">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="searchRecipient" 
+                                               placeholder="Поиск получателей...">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="searchRecipients()">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="recipients-list" style="max-height: 300px; overflow-y: auto;">
+                                    {% for recipient in recipients %}
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" 
+                                               class="form-check-input recipient-checkbox" 
+                                               name="recipients" 
+                                               value="{{ recipient.id }}"
+                                               id="recipient_{{ recipient.id }}"
+                                               {% if recipient.id in form.recipients.value %}checked{% endif %}>
+                                        <label class="form-check-label" for="recipient_{{ recipient.id }}">
+                                            <strong>{{ recipient.email }}</strong>
+                                            {% if recipient.full_username %}
+                                                <span class="text-muted">({{ recipient.full_username }})</span>
+                                            {% endif %}
+                                            <br>
+                                            <small class="text-muted">
+                                                Статус: {% if recipient.status %}
+                                                    <span class="text-success">✅ Активен</span>
+                                                {% else %}
+                                                    <span class="text-danger">⛔ Неактивен</span>
+                                                {% endif %}
+                                                | Добавлен: {{ recipient.attempt_time|date:"d.m.Y" }}
+                                            </small>
+                                        </label>
+                                    </div>
+                                    {% empty %}
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                                        <p class="text-muted mb-0">Нет доступных получателей</p>
+                                        <button type="button" class="btn btn-sm btn-primary mt-2" 
+                                                onclick="createRecipient()">
+                                            <i class="bi bi-plus-circle me-1"></i>Создать получателя
+                                        </button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-link text-primary" 
+                                        onclick="selectAllRecipients()">
+                                    <i class="bi bi-check2-all me-1"></i>Выбрать всех
+                                </button>
+                                <button type="button" class="btn btn-sm btn-link text-secondary" 
+                                        onclick="deselectAllRecipients()">
+                                    <i class="bi bi-x-circle me-1"></i>Снять выделение
+                                </button>
+                            </div>
+                            
+                            {% if form.recipients.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.recipients.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Дополнительные настройки -->
+                        <div class="mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="bi bi-gear me-1"></i>Дополнительные настройки
+                                    </h6>
+                                    
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" class="form-check-input" id="scheduleSend" 
+                                               name="schedule_send">
+                                        <label class="form-check-label" for="scheduleSend">
+                                            Отложенная отправка
+                                        </label>
+                                    </div>
+                                    
+                                    <div id="scheduleOptions" style="display: none;">
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Дата начала</label>
+                                                <input type="datetime-local" class="form-control" name="start_time">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Дата окончания</label>
+                                                <input type="datetime-local" class="form-control" name="end_time">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки действий -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>Создать рассылку
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Подсказки -->
+            <div class="alert alert-info mt-4" role="alert">
+                <i class="bi bi-lightbulb-fill me-2"></i>
+                <strong>Совет:</strong> Перед созданием рассылки убедитесь, что:
+                <ul class="mb-0 mt-2">
+                    <li>Выбрано сообщение для отправки</li>
+                    <li>Добавлены получатели</li>
+                    <li>Проверены настройки статуса</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Боковая панель со статистикой -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Статистика
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">Выбрано получателей:</label>
+                        <h3 class="mb-0" id="selectedCount">0</h3>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <label class="text-muted">Всего получателей:</label>
+                        <h5 class="mb-0">{{ recipients.count }}</h5>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted">Активных получателей:</label>
+                        <h5 class="mb-0 text-success">
+                            {{ recipients|length }}
+                        </h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle me-2"></i>Быстрая помощь
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Статусы рассылок:</strong></p>
+                    <ul class="small">
+                        <li><span class="badge bg-success">Запущена</span> - отправка начата</li>
+                        <li><span class="badge bg-secondary">Создана</span> - ожидает запуска</li>
+                        <li><span class="badge bg-primary">Завершена</span> - отправка окончена</li>
+                    </ul>
+                    <hr>
+                    <p class="small text-muted mb-0">
+                        <i class="bi bi-clock-history me-1"></i>
+                        Создание рассылки обычно занимает несколько секунд
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Подсчет выбранных получателей
+    function updateSelectedCount() {
+        const checkboxes = document.querySelectorAll('.recipient-checkbox:checked');
+        document.getElementById('selectedCount').textContent = checkboxes.length;
+    }
+    
+    // Выбрать всех получателей
+    function selectAllRecipients() {
+        document.querySelectorAll('.recipient-checkbox').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+    }
+    
+    // Снять выделение
+    function deselectAllRecipients() {
+        document.querySelectorAll('.recipient-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    }
+    
+    // Поиск получателей
+    function searchRecipients() {
+        const searchTerm = document.getElementById('searchRecipient').value.toLowerCase();
+        const items = document.querySelectorAll('.form-check');
+        
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    // Показать/скрыть опции отложенной отправки
+    document.getElementById('scheduleSend')?.addEventListener('change', function(e) {
+        const scheduleOptions = document.getElementById('scheduleOptions');
+        scheduleOptions.style.display = e.target.checked ? 'block' : 'none';
+    });
+    
+    // Отслеживание изменений в чекбоксах
+    document.querySelectorAll('.recipient-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Валидация формы перед отправкой
+    document.getElementById('mailingForm')?.addEventListener('submit', function(e) {
+        const selectedRecipients = document.querySelectorAll('.recipient-checkbox:checked');
+        
+        if (selectedRecipients.length === 0) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите хотя бы одного получателя');
+            return false;
+        }
+        
+        const message = document.querySelector('select[name="message"]').value;
+        if (!message) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите сообщение для рассылки');
+            return false;
+        }
+    });
+    
+    // Создание нового получателя
+    function createRecipient() {
+        window.location.href = "{% url 'mailing:create_recipient' %}";
+    }
+    
+    // Инициализация
+    updateSelectedCount();
+    
+    // Добавление стилей для чекбоксов
+    const style = document.createElement('style');
+    style.textContent = `
+        .form-check:hover {
+            background-color: #f8f9fa;
+            padding: 8px;
+            margin: -8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

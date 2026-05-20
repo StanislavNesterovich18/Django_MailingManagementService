@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Редактирование сообщения
+    {% else %}
+        Создание сообщения
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:mailing_list' %}">
+                            <i class="bi bi-envelope-paper me-1"></i>Сообщения
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">
+                        {% if form.instance.pk %}Редактирование{% else %}Создание{% endif %}
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Карточка формы -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        {% if form.instance.pk %}
+                            <i class="bi bi-pencil-square me-2 text-warning"></i>Редактирование сообщения
+                        {% else %}
+                            <i class="bi bi-plus-circle me-2 text-primary"></i>Создание сообщения
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Тема письма -->
+                        <div class="mb-3">
+                            <label for="{{ form.subject_letter.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-1"></i>Тема письма
+                            </label>
+                            {{ form.subject_letter }}
+                            {% if form.subject_letter.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.subject_letter.errors %}
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Краткая тема письма (максимум 200 символов)
+                            </div>
+                        </div>
+                        
+                        <!-- Текст сообщения -->
+                        <div class="mb-4">
+                            <label for="{{ form.body_letter.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-file-text me-1"></i>Текст сообщения
+                            </label>
+                            {{ form.body_letter }}
+                            {% if form.body_letter.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.body_letter.errors %}
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Основной текст письма (максимум 500 символов)
+                                <span class="float-end">
+                                    <span id="charCount">0</span>/500 символов
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>
+                                {% if form.instance.pk %}Сохранить{% else %}Создать{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Подсказки -->
+            <div class="alert alert-info mt-4" role="alert">
+                <i class="bi bi-lightbulb-fill me-2"></i>
+                <strong>Совет:</strong> Хорошее сообщение должно содержать:
+                <ul class="mb-0 mt-2">
+                    <li>Информативную тему письма</li>
+                    <li>Приветствие</li>
+                    <li>Основную информацию</li>
+                    <li>Прощание и подпись</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Подсчет символов в тексте
+    document.addEventListener('DOMContentLoaded', function() {
+        const bodyField = document.getElementById('{{ form.body_letter.id_for_label }}');
+        const charCountSpan = document.getElementById('charCount');
+        
+        if (bodyField && charCountSpan) {
+            function updateCharCount() {
+                const count = bodyField.value.length;
+                charCountSpan.textContent = count;
+                
+                if (count > 500) {
+                    charCountSpan.style.color = 'red';
+                    charCountSpan.style.fontWeight = 'bold';
+                } else {
+                    charCountSpan.style.color = '';
+                    charCountSpan.style.fontWeight = '';
+                }
+            }
+            
+            bodyField.addEventListener('input', updateCharCount);
+            updateCharCount(); // Инициализация
+        }
+        
+        // Добавляем классы Bootstrap
+        const subjectField = document.getElementById('{{ form.subject_letter.id_for_label }}');
+        if (subjectField) {
+            subjectField.classList.add('form-control');
+            if ({{ form.subject_letter.errors|length }} > 0) {
+                subjectField.classList.add('is-invalid');
+            }
+        }
+        
+        if (bodyField) {
+            bodyField.classList.add('form-control');
+            if ({{ form.body_letter.errors|length }} > 0) {
+                bodyField.classList.add('is-invalid');
+            }
+        }
+    });
+</script>
+{% endblock %}

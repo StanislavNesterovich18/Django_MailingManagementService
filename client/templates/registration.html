@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация и Регистрация</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Заголовок -->
+            <div class="text-center mb-4">
+                <h1 class="display-5 fw-bold text-primary">Добро пожаловать</h1>
+                <p class="lead text-secondary">Войдите в аккаунт или зарегистрируйтесь</p>
+            </div>
+
+            <!-- Табы для переключения между формами -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white p-0 border-0">
+                    <ul class="nav nav-fill" >
+                        <li class="nav-item">
+                            <a class="nav-link  fw-semibold py-3" href="{% url 'client:login' %}"
+                               type="button">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Вход
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active fw-semibold py-3" href="{% url 'client:registration' %}">
+                                <i class="bi bi-person-plus me-2"></i>Регистрация
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content" id="authTabContent">
+                        <!-- Форма регистрации (под модель Client) -->
+                        <div class="tab-pane fade show active" id="register" role="tabpanel"
+                             aria-labelledby="register-tab">
+                            <form action="/registration/" method="POST" id="registerForm" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="register">
+                                {{ form.as_p }}
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

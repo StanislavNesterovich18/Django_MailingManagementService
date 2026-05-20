@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Получатель: {{ recipient.email }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:recipient_list' %}">
+                            <i class="bi bi-people me-1"></i>Получатели
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ recipient.email }}</li>
+                </ol>
+            </nav>
+            
+            <!-- Карточка получателя -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-person-circle me-2"></i>Информация о получателе
+                        </h4>
+                        <div>
+                            <a href="{% url 'mailing:update_recipient' recipient.pk %}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </a>
+                            <a href="{% url 'mailing:delete_recipient' recipient.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Удалить
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width: 150px;">ID:</th>
+                            <td>{{ recipient.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>
+                                <i class="bi bi-envelope me-1"></i>
+                                <a href="mailto:{{ recipient.email }}">{{ recipient.email }}</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Ф.И.О.:</th>
+                            <td>{{ recipient.full_username|default:"<span class='text-muted'>Не указано</span>" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Кнопка назад -->
+            <div class="mt-3">
+                <a href="{% url 'mailing:recipient_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Назад к списку
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

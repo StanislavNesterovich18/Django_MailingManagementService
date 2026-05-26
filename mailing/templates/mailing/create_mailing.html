@@ -58,27 +58,12 @@
                                 {{ form.message.errors|join:", " }}
                             </div>
                             {% endif %}
-                        </div>
-
-                        <!-- Статус -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-flag me-1"></i>Статус рассылки
-                            </label>
-                            <select name="status" class="form-select">
-                                <option value="LAU" {% if form.status.value == 'LAU' or not form.status.value %}selected{% endif %}>
-                                    Запущена (начнется сразу после создания)
-                                </option>
-                                <option value="NEW" {% if form.status.value == 'NEW' %}selected{% endif %}>
-                                    Создана (будет запущена позже)
-                                </option>
-                            </select>
-                            <div class="form-text">
-                                <i class="bi bi-lightbulb me-1"></i>
-                                Запущенная рассылка начнет отправляться немедленно
+                            {% if error %}
+                            <div class="invalid-feedback d-block">
+                                {{ error }}
                             </div>
+                            {% endif %}
                         </div>
-
                         <!-- Получатели -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">
@@ -159,24 +144,16 @@
                                     <h6 class="card-title mb-3">
                                         <i class="bi bi-gear me-1"></i>Дополнительные настройки
                                     </h6>
-                                    
-                                    <div class="form-check mb-2">
-                                        <input type="checkbox" class="form-check-input" id="scheduleSend" 
-                                               name="schedule_send">
-                                        <label class="form-check-label" for="scheduleSend">
-                                            Отложенная отправка
-                                        </label>
-                                    </div>
-                                    
-                                    <div id="scheduleOptions" style="display: none;">
+
+                                    <div id="scheduleOptions" style="display: block;">
                                         <div class="row mt-2">
                                             <div class="col-md-6">
                                                 <label class="form-label">Дата начала</label>
-                                                <input type="datetime-local" class="form-control" name="start_time">
+                                                <input type="datetime-local" class="form-control" name="start_time" required>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Дата окончания</label>
-                                                <input type="datetime-local" class="form-control" name="end_time">
+                                                <input type="datetime-local" class="form-control" name="end_time" required>
                                             </div>
                                         </div>
                                     </div>
@@ -297,12 +274,6 @@
             }
         });
     }
-    
-    // Показать/скрыть опции отложенной отправки
-    document.getElementById('scheduleSend')?.addEventListener('change', function(e) {
-        const scheduleOptions = document.getElementById('scheduleOptions');
-        scheduleOptions.style.display = e.target.checked ? 'block' : 'none';
-    });
     
     // Отслеживание изменений в чекбоксах
     document.querySelectorAll('.recipient-checkbox').forEach(checkbox => {

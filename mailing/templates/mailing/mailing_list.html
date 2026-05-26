@@ -103,6 +103,14 @@
                                                title="Редактировать">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
+                                            {% if mailing.status == "NEW" %}
+                                            <a type="button"
+                                                    href="{% url 'mailing:start_mailing' mailing.pk %}"
+                                                    class="btn btn-outline-success"
+                                                    title="Запустить рассылку">
+                                                <i class="bi bi-play-fill"></i>
+                                            </a>
+                                            {% endif %}
                                             <a href="{% url 'mailing:delete_mailing' mailing.pk %}" 
                                                class="btn btn-outline-danger" 
                                                title="Удалить">

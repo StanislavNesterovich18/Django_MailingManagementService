@@ -103,13 +103,13 @@
                                 <table class="table table-borderless">
                                     <tr>
                                         <th style="width: 40%">Тема:</th>
-                                        <td>{{ mailing.message.subject|default:"Без темы" }}</td>
+                                        <td>{{ mailing.message.subject_letter|default:"Без темы" }}</td>
                                     </tr>
                                     <tr>
                                         <th>Текст сообщения:</th>
                                         <td>
                                             <div class="border rounded p-3 bg-light">
-                                                {{ mailing.message.body|linebreaks|default:"Нет текста" }}
+                                                {{ mailing.message.body_letter|linebreaks|default:"Нет текста" }}
                                             </div>
                                         </td>
                                     </tr>
@@ -165,7 +165,7 @@
                                                     <span class="badge bg-danger">Не доставлено</span>
                                                 {% endif %}
                                             </td>
-                                            <td>{{ recipient.comment|truncatechars:50|default:"—" }}</td>
+                                            <td>{{ recipient.server_response|truncatechars:50|default:"—" }}</td>
                                         </tr>
                                         {% empty %}
                                         <tr>

@@ -1,16 +1,23 @@
+from datetime import datetime
+from typing import Optional
+
 from django.core.mail import send_mail
 
 from config.settings import EMAIL_HOST_USER
 from mailing.models import Mailing
 
 
-def send_recipient():
-    mailing_recipient = Mailing.objects.filter(status=Mailing.NEW).all()
+def send_recipient(mailing:Optional[Mailing] = None):
+    if mailing:
+        mailing_recipient =[mailing]
+    else:
+        mailing_recipient = Mailing.objects.filter(status=Mailing.NEW).all()
     for mailing in mailing_recipient:
         mailing.status = Mailing.LAUNCHED
         mailing.save()
         recipients = mailing.recipients.all()
         for recipient in recipients:
+            recipient.attempt_time = datetime.now()
 
             try:
                 send_mail(

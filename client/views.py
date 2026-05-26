@@ -1,17 +1,14 @@
 import secrets
 
-from django.contrib import messages
 from django.contrib.auth import logout
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
-from django.db import models
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
+from django.views.generic import CreateView
 
-from config.settings import EMAIL_HOST_USER
 from client.forms import CustomClientCreationForm
-from client.models import Client, Recipient
+from client.models import Client
+from config.settings import EMAIL_HOST_USER
 
 
 def logout_view(request):
@@ -25,7 +22,6 @@ class UserRegistration(CreateView):
     template_name = "registration.html"
     success_url = reverse_lazy("client:login")
 
-
     def form_valid(self, form):
         user = form.save()
         user.is_active = False
@@ -34,7 +30,7 @@ class UserRegistration(CreateView):
         # Отправка на почту
         host = self.request.get_host()
         try:
-            url = f"http://{host}/user/email_validation/{user.token}/"
+            url = f"http://{host}/email_validation/{user.token}/"
             send_mail(
                 subject="Email Validation",
                 message=f"Подтвердите почту, перейдя по ссылке: {url}",
@@ -53,7 +49,3 @@ def token_valid(request, token):
         user.is_active = True
         user.save()
     return redirect(reverse("catalog:home"))
-
-
-
-

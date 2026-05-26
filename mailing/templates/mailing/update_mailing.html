@@ -51,31 +51,12 @@
                                 {% for message in messages %}
                                 <option value="{{ message.id }}" 
                                         {% if mailing.message.id == message.id %}selected{% endif %}>
-                                    {{ message.subject|truncatechars:50 }}
+                                    {{ message.subject_letter|truncatechars:50 }}
                                 </option>
                                 {% endfor %}
                             </select>
                         </div>
 
-                        <!-- Статус -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-flag me-1"></i>Статус
-                            </label>
-                            <select name="status" class="form-select">
-                                {% for value, label in mailing.STATUS.items %}
-                                <option value="{{ value }}" {% if mailing.status == value %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-text">
-                                {% if mailing.status == "COM" %}
-                                <i class="bi bi-exclamation-triangle text-warning"></i>
-                                Завершенную рассылку нельзя изменить
-                                {% endif %}
-                            </div>
-                        </div>
 
                         <!-- Получатели -->
                         <div class="mb-4">

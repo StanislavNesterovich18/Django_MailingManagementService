@@ -1,5 +1,3 @@
-
-
 #
 # class ModerationPermission(permissions.BasePermission):
 #     def has_permission(self, request, view):

@@ -4,6 +4,8 @@ from send_messages import views
 from send_messages.apps import SendMessagesConfig
 
 app_name = SendMessagesConfig.name
+
+
 urlpatterns = [
     path("", views.MessageListView.as_view(), name="message_list"),
     path("create_message/", views.MessageCreateView.as_view(), name="create_message"),

@@ -32,7 +32,9 @@ class Client(AbstractUser):
 class Recipient(models.Model):
     email = models.EmailField(unique=True, verbose_name="почта", null=False, blank=False)
     full_username = models.TextField(null=True, blank=True, verbose_name=" Ф.И.О.")
-
+    server_response = models.TextField(null=True, blank=True, verbose_name="Ответ сервера")
+    status = models.BooleanField(default=False)
+    attempt_time = models.DateTimeField()
 
 
     def __str__(self):

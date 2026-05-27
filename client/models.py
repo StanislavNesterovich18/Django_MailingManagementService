@@ -34,7 +34,7 @@ class Recipient(models.Model):
     full_username = models.TextField(null=True, blank=True, verbose_name=" Ф.И.О.")
     server_response = models.TextField(null=True, blank=True, verbose_name="Ответ сервера")
     status = models.BooleanField(default=False)
-    attempt_time = models.DateTimeField()
+    attempt_time = models.DateTimeField(null=True, blank=True)
 
 
     def __str__(self):

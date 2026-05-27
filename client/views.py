@@ -13,7 +13,7 @@ from config.settings import EMAIL_HOST_USER
 
 def logout_view(request):
     logout(request)
-    return redirect(reverse("catalog:home"))
+    return redirect(reverse("client:login"))
 
 
 class UserRegistration(CreateView):
@@ -48,4 +48,4 @@ def token_valid(request, token):
         user = user[0]
         user.is_active = True
         user.save()
-    return redirect(reverse("catalog:home"))
+    return redirect(reverse("client:login"))

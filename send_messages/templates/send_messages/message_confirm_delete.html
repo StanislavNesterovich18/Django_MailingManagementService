@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Удаление сообщения{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Подтверждение удаления
+                    </h4>
+                </div>
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-envelope-x fs-1 text-danger mb-3 d-block"></i>
+                    <h5 class="mb-3">Вы уверены, что хотите удалить это сообщение?</h5>
+                    
+                    <div class="alert alert-warning">
+                        <p class="mb-0">
+                            <strong>Тема:</strong> {{ message.subject_letter|default:"Без темы" }}<br>
+                            <strong>Текст:</strong> {{ message.body_letter|truncatechars:100|default:"Нет текста" }}
+                        </p>
+                    </div>
+                    
+                    <p class="text-danger small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Это действие нельзя отменить!
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{% url 'send_messages:detail_message' message.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-2"></i>Да, удалить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

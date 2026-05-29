@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактирование рассылки #{{ mailing.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:mailing_list' %}">
+                            <i class="bi bi-envelope-paper me-1"></i>Рассылки
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:detail_mailing' mailing.pk %}">
+                            Рассылка #{{ mailing.id }}
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Редактирование</li>
+                </ol>
+            </nav>
+
+            <!-- Заголовок -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i class="bi bi-pencil-square me-2 text-warning"></i>Редактирование рассылки #{{ mailing.id }}
+                </h1>
+                <a href="{% url 'mailing:detail_mailing' mailing.pk %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Назад
+                </a>
+            </div>
+
+            <!-- Форма редактирования -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" id="mailingForm">
+                        {% csrf_token %}
+                        
+                        <!-- Сообщение -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-envelope me-1"></i>Сообщение
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="message" class="form-select" required>
+                                <option value="">Выберите сообщение</option>
+                                {% for message in messages %}
+                                <option value="{{ message.id }}" 
+                                        {% if mailing.message.id == message.id %}selected{% endif %}>
+                                    {{ message.subject_letter|truncatechars:50 }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        <!-- Получатели -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-people me-1"></i>Получатели
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="border rounded p-3">
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="searchRecipient" 
+                                           placeholder="Поиск получателей...">
+                                </div>
+                                
+                                <div class="recipients-list" style="max-height: 300px; overflow-y: auto;">
+                                    {% for recipient in recipients %}
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" 
+                                               class="form-check-input recipient-checkbox" 
+                                               name="recipients" 
+                                               value="{{ recipient.id }}"
+                                               id="recipient_{{ recipient.id }}"
+                                               {% if recipient in mailing.recipients.all %}checked{% endif %}>
+                                        <label class="form-check-label" for="recipient_{{ recipient.id }}">
+                                            <strong>{{ recipient.email }}</strong>
+                                            {% if recipient.full_username %}
+                                                <span class="text-muted">({{ recipient.full_username }})</span>
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-link" onclick="selectAllRecipients()">
+                                    Выбрать всех
+                                </button>
+                                <button type="button" class="btn btn-sm btn-link" onclick="deselectAllRecipients()">
+                                    Снять выделение
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'mailing:detail_mailing' mailing.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-warning" 
+                                    {% if mailing.status == "COM" %}disabled{% endif %}>
+                                <i class="bi bi-save me-2"></i>Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedCount = 0;
+    
+    function updateSelectedCount() {
+        selectedCount = document.querySelectorAll('.recipient-checkbox:checked').length;
+        console.log(`Выбрано получателей: ${selectedCount}`);
+    }
+    
+    function selectAllRecipients() {
+        document.querySelectorAll('.recipient-checkbox').forEach(cb => cb.checked = true);
+        updateSelectedCount();
+    }
+    
+    function deselectAllRecipients() {
+        document.querySelectorAll('.recipient-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+    }
+    
+    function searchRecipients() {
+        const term = document.getElementById('searchRecipient').value.toLowerCase();
+        document.querySelectorAll('.form-check').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(term) ? '' : 'none';
+        });
+    }
+    
+    document.getElementById('searchRecipient')?.addEventListener('input', searchRecipients);
+    document.querySelectorAll('.recipient-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+    
+    updateSelectedCount();
+</script>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Редактирование получателя
+    {% else %}
+        Создание получателя
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'mailing:recipient_list' %}">
+                            <i class="bi bi-people me-1"></i>Получатели
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">
+                        {% if form.instance.pk %}Редактирование{% else %}Создание{% endif %}
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Карточка формы -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        {% if form.instance.pk %}
+                            <i class="bi bi-pencil-square me-2 text-warning"></i>Редактирование получателя
+                        {% else %}
+                            <i class="bi bi-person-plus me-2 text-primary"></i>Создание получателя
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Email поле -->
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-envelope me-1"></i>Email адрес
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.email.errors %}
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Введите корректный email адрес получателя
+                            </div>
+                        </div>
+                        
+                        <!-- ФИО поле -->
+                        <div class="mb-4">
+                            <label for="{{ form.full_username.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-person-badge me-1"></i>Ф.И.О.
+                            </label>
+                            {{ form.full_username }}
+                            {% if form.full_username.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.full_username.errors %}
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Полное имя получателя (необязательно)
+                            </div>
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'mailing:recipient_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>
+                                {% if form.instance.pk %}Сохранить{% else %}Создать{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Автоматическое добавление классов Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавляем классы Bootstrap к полям формы
+        const emailField = document.getElementById('{{ form.email.id_for_label }}');
+        const fullnameField = document.getElementById('{{ form.full_username.id_for_label }}');
+        
+        if (emailField) {
+            emailField.classList.add('form-control');
+            if ({{ form.email.errors|length }} > 0) {
+                emailField.classList.add('is-invalid');
+            }
+        }
+        
+        if (fullnameField) {
+            fullnameField.classList.add('form-control');
+            if ({{ form.full_username.errors|length }} > 0) {
+                fullnameField.classList.add('is-invalid');
+            }
+        }
+    });
+</script>
+{% endblock %}
